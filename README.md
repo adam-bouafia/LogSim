@@ -153,13 +153,13 @@ Extracted template:
 
 ### Baseline Comparison
 
-| Method          | Avg Ratio | Apache | HealthApp | Zookeeper | Proxifier | Queryable |
-|-----------------|-----------|--------|-----------|-----------|-----------|-----------||
-| **Zstandard**   | **24.61x**| 20.17x | 16.31x    | 39.16x    | 22.80x    | ❌ No     |
-| **Gzip**        | **18.71x**| 15.15x | 12.15x    | 29.00x    | 18.52x    | ❌ No     |
-| **LogSim**      | **16.91x**| 15.11x | 11.47x    | 25.76x    | 15.30x    | ✅ **Yes**|
-| **LZ4**         | **13.78x**| 12.65x | 8.80x     | 18.84x    | 14.83x    | ❌ No     |
-| **Snappy**      | **8.21x** | 7.51x  | 6.39x     | 10.76x    | 8.19x     | ❌ No     |
+| Method        | Avg Ratio | Apache | HealthApp | Zookeeper | Proxifier | Queryable |
+|---------------|-----------|--------|-----------|-----------|-----------|-----------|
+| **Zstandard** | **24.61x**| 20.17x | 16.31x    | 39.16x    | 22.80x    | ❌ No     |
+| **Gzip**      | **18.71x**| 15.15x | 12.15x    | 29.00x    | 18.52x    | ❌ No     |
+| **LogSim**    | **16.91x**| 15.11x | 11.47x    | 25.76x    | 15.30x    | ✅ **Yes**|
+| **LZ4**       | **13.78x**| 12.65x | 8.80x     | 18.84x    | 14.83x    | ❌ No     |
+| **Snappy**    | **8.21x** | 7.51x  | 6.39x     | 10.76x    | 8.19x     | ❌ No     |
 
 **Key Insight**: LogSim achieves strong compression ratios while enabling structured query support without full decompression.
 
