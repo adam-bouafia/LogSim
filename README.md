@@ -10,7 +10,7 @@ LogSim is a high-performance log compression system that automatically extracts 
 - **Automatic Schema Extraction**: No configuration required - discovers log templates automatically
 - **Semantic-Aware Compression**: Different compression strategies for timestamps, IPs, severity levels, and messages
 - **Queryable Format**: Columnar storage enables selective field access without full decompression
-- **High Performance**: Processes 1.35-2.82 MB/s with 11.47x compression ratio
+- **High Performance**: Processes 1.26-2.57 MB/s with 11.47x compression ratio
 - **Lossless**: Perfect reconstruction of original logs
 
 ## Quick Start
@@ -95,15 +95,15 @@ Performance on real-world log datasets (360K total logs, 36.52 MB):
 
 | Dataset | Logs | Original | Compressed | Ratio | vs gzip-9 | Speed |
 |---------|------|----------|------------|-------|-----------|-------|
-| Apache | 51,978 | 4.75 MB | 584 KB | **8.32x** | 39.2% | 1.40 MB/s |
-| HealthApp | 212,394 | 19.53 MB | 1.87 MB | **10.69x** | 97.9% | 2.82 MB/s |
-| Proxifier | 21,320 | 2.40 MB | 197 KB | **12.49x** | 79.6% | 1.35 MB/s |
-| Zookeeper | 74,273 | 9.84 MB | 610 KB | **16.53x** | 63.9% | 1.35 MB/s |
-| **Average** | **360K** | **36.52 MB** | **3.18 MB** | **11.47x** | **79.9%** | **1.73 MB/s** |
+| Apache | 51,978 | 4.75 MB | 584.24 KB | **8.32x** | 39.2% | 1.26 MB/s |
+| HealthApp | 212,394 | 19.53 MB | 1870.52 KB | **10.69x** | 97.9% | 2.57 MB/s |
+| Proxifier | 21,320 | 2.40 MB | 196.98 KB | **12.49x** | 79.6% | 1.29 MB/s |
+| Zookeeper | 74,273 | 9.84 MB | 609.86 KB | **16.53x** | 63.9% | 1.27 MB/s |
+| **Average** | **359,965** | **36.52 MB** | **3.18 MB** | **11.47x** | **79.9%** | **1.60 MB/s** |
 
 **Key Metrics:**
 - Average compression ratio: **11.47x** (79.9% of gzip-9 efficiency)
-- Compression speed: **1.73 MB/s** average
+- Compression speed: **1.60 MB/s** average
 - Template extraction: **77 templates** across all datasets
 - Match rate: **100%** (all logs successfully matched)
 
@@ -144,50 +144,7 @@ Run comprehensive evaluation on all datasets:
 python run_full_evaluation.py
 ```
 
-<<<<<<< HEAD
 Results will be saved to `results/full_evaluation_results.md`.
-=======
-**Example**:
-```
-Input logs:
-  [Thu Jun 09 06:07:04 2005] [notice] LDAP: Built with OpenLDAP
-  [Thu Jun 09 06:07:05 2005] [notice] LDAP: SSL support unavailable
-
-Extracted template:
-  [<TIMESTAMP>] [<SEVERITY>] LDAP: <MESSAGE>
-```
-
-## Evaluation Results
-
-### Compression Performance
-
-| Dataset    | Original | Compressed | Ratio      |
-|------------|----------|------------|------------|
-| Apache     | 482 KB   | 31.9 KB    | 15.11x     |
-| HealthApp  | 463 KB   | 40.4 KB    | 11.47x     |
-| Zookeeper  | 636 KB   | 24.7 KB    | 25.76x     |
-| Proxifier  | 570 KB   | 37.2 KB    | 15.30x     |
-| **Average**|          |            | **16.91x** |
-
-### Baseline Comparison
-
-| Method        | Avg Ratio | Apache | HealthApp | Zookeeper | Proxifier | Queryable |
-|---------------|-----------|--------|-----------|-----------|-----------|-----------|
-| **Zstandard** | **24.61x**| 20.17x | 16.31x    | 39.16x    | 22.80x    | ❌ No     |
-| **Gzip**      | **18.71x**| 15.15x | 12.15x    | 29.00x    | 18.52x    | ❌ No     |
-| **LogSim**    | **16.91x**| 15.11x | 11.47x    | 25.76x    | 15.30x    | ✅ **Yes**|
-| **LZ4**       | **13.78x**| 12.65x | 8.80x     | 18.84x    | 14.83x    | ❌ No     |
-| **Snappy**    | **8.21x** | 7.51x  | 6.39x     | 10.76x    | 8.19x     | ❌ No     |
-
-**Key Insight**: LogSim achieves strong compression ratios while enabling structured query support without full decompression.
-
-### Key Advantages
-
-- **Queryable**: Access specific fields without full decompression
-- **Fast**: Template-based parsing and columnar storage
-- **Automatic**: No manual configuration or training required
-- **Semantic**: Understands log structure (timestamps, IPs, severity levels)
->>>>>>> 6d4391bd4e5506cfbb8c01d5cc0a5a4536f3f56b
 
 ## Project Structure
 
