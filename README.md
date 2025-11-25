@@ -144,7 +144,50 @@ Run comprehensive evaluation on all datasets:
 python run_full_evaluation.py
 ```
 
+<<<<<<< HEAD
 Results will be saved to `results/full_evaluation_results.md`.
+=======
+**Example**:
+```
+Input logs:
+  [Thu Jun 09 06:07:04 2005] [notice] LDAP: Built with OpenLDAP
+  [Thu Jun 09 06:07:05 2005] [notice] LDAP: SSL support unavailable
+
+Extracted template:
+  [<TIMESTAMP>] [<SEVERITY>] LDAP: <MESSAGE>
+```
+
+## Evaluation Results
+
+### Compression Performance
+
+| Dataset    | Original | Compressed | Ratio      |
+|------------|----------|------------|------------|
+| Apache     | 482 KB   | 31.9 KB    | 15.11x     |
+| HealthApp  | 463 KB   | 40.4 KB    | 11.47x     |
+| Zookeeper  | 636 KB   | 24.7 KB    | 25.76x     |
+| Proxifier  | 570 KB   | 37.2 KB    | 15.30x     |
+| **Average**|          |            | **16.91x** |
+
+### Baseline Comparison
+
+| Method        | Avg Ratio | Apache | HealthApp | Zookeeper | Proxifier | Queryable |
+|---------------|-----------|--------|-----------|-----------|-----------|-----------|
+| **Zstandard** | **24.61x**| 20.17x | 16.31x    | 39.16x    | 22.80x    | ❌ No     |
+| **Gzip**      | **18.71x**| 15.15x | 12.15x    | 29.00x    | 18.52x    | ❌ No     |
+| **LogSim**    | **16.91x**| 15.11x | 11.47x    | 25.76x    | 15.30x    | ✅ **Yes**|
+| **LZ4**       | **13.78x**| 12.65x | 8.80x     | 18.84x    | 14.83x    | ❌ No     |
+| **Snappy**    | **8.21x** | 7.51x  | 6.39x     | 10.76x    | 8.19x     | ❌ No     |
+
+**Key Insight**: LogSim achieves strong compression ratios while enabling structured query support without full decompression.
+
+### Key Advantages
+
+- **Queryable**: Access specific fields without full decompression
+- **Fast**: Template-based parsing and columnar storage
+- **Automatic**: No manual configuration or training required
+- **Semantic**: Understands log structure (timestamps, IPs, severity levels)
+>>>>>>> 6d4391bd4e5506cfbb8c01d5cc0a5a4536f3f56b
 
 ## Project Structure
 
