@@ -46,3 +46,12 @@ docs/THESIS_*.md
 *.blg
 *.synctex.gz
 *.pdf
+
+# Exclude specific documentation files
+BENCHMARKS_QUICK_REFERENCE.md
+IMPLEMENTATION_SUMMARY.md
+THESIS_UPDATES.md
+apply.md
+
+# Exclude thesis LaTeX folder
+thesis/

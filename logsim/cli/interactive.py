@@ -13,6 +13,9 @@ from rich.layout import Layout
 from rich import box
 from pathlib import Path
 import time
+import shutil
+import subprocess
+import sys
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 
@@ -135,9 +138,10 @@ class InteractiveCLI:
         actions_table.add_row("[1]", "🗜️  Compress selected datasets")
         actions_table.add_row("[2]", "🔍 Query compressed files")
         actions_table.add_row("[3]", "📊 Run full evaluation")
-        actions_table.add_row("[4]", "⚖️  Benchmark comparison (vs gzip)")
+        actions_table.add_row("[4]", "⚖️  Comprehensive benchmarks (gzip, bzip2, xz, zstd, lz4, logreduce)")
         actions_table.add_row("[5]", "📈 View results")
         actions_table.add_row("[6]", "⚙️  Settings")
+        actions_table.add_row("[7]", "📦 Install benchmark tools")
         actions_table.add_row("[0]", "🚪 Exit")
         
         console.print(Panel(actions_table, title="[bold green]🎬 Actions[/bold green]", border_style="green"))
@@ -161,6 +165,8 @@ class InteractiveCLI:
                 self.view_results()
             elif choice == "6":
                 self.settings_menu()
+            elif choice == "7":
+                self.install_tools_menu()
             elif choice == "0" or choice.lower() == "x":
                 console.print("[yellow]Exiting...[/yellow]")
                 exit(0)
@@ -437,29 +443,43 @@ class InteractiveCLI:
         Prompt.ask("Press enter to continue")
     
     def benchmark_comparison(self):
-        """Run benchmark comparison"""
+        """Run comprehensive benchmark comparison"""
         console.clear()
-        console.print(Panel("Benchmark vs gzip", style="cyan", box=box.DOUBLE))
+        console.print(Panel("Comprehensive Benchmark Comparison", style="cyan", box=box.DOUBLE))
         console.print()
         
-        console.print("[yellow]This will compare LogSim compression with gzip.[/yellow]")
+        console.print("[yellow]This will compare LogSim against multiple compression tools:[/yellow]")
+        console.print("  • gzip-9 (GNU zip)")
+        console.print("  • bzip2-9 (block-sorting)")
+        console.print("  • xz-9 (LZMA)")
+        console.print("  • zstd-15 (Facebook Zstandard)")
+        console.print("  • lz4-9 (ultra-fast)")
+        console.print()
+        console.print("[cyan]Also benchmarks query performance (selective decompression)[/cyan]")
+        console.print()
+        console.print("[dim]Results will be saved to: evaluation/results/[/dim]")
         console.print()
         
         if Confirm.ask("Continue?", default=True):
             console.print()
-            console.print("[cyan]Running benchmarks...[/cyan]")
+            console.print("[cyan]Running comprehensive benchmarks...[/cyan]")
+            console.print("[dim](This may take 5-8 minutes for all datasets)[/dim]")
             console.print()
             
             import subprocess
             # Stream output live so user can see progress
             result = subprocess.run(
-                ["python", "evaluation/run_query_benchmarks.py"],
+                ["python", "evaluation/run_comprehensive_benchmarks.py"],
                 cwd=Path.cwd(),
                 text=True
             )
             
             console.print()
-            console.print("[green]✓ Benchmarks complete![/green]")
+            if result.returncode == 0:
+                console.print("[green]✅ Comprehensive benchmarks complete![/green]")
+                console.print("[cyan]Results saved in evaluation/results/ as JSON and Markdown[/cyan]")
+            else:
+                console.print("[red]❌ Benchmark failed! Check output above for errors.[/red]")
         
         console.print()
         Prompt.ask("Press enter to continue")
@@ -602,6 +622,127 @@ class InteractiveCLI:
             else:
                 console.print("[red]Invalid option![/red]")
                 time.sleep(1)
+    
+    def install_tools_menu(self):
+        """Install or check benchmark tools"""
+        console.clear()
+        console.print(Panel("Install Benchmark Tools", style="cyan", box=box.DOUBLE))
+        console.print()
+        
+        # Check tool availability
+        tools_status = {
+            'System Tools': {
+                'gzip': shutil.which('gzip'),
+                'bzip2': shutil.which('bzip2'),
+                'xz': shutil.which('xz'),
+                'zstd': shutil.which('zstd'),
+                'lz4': shutil.which('lz4'),
+            },
+            'Python Tools': {
+                'logreduce': self._check_python_package('logreduce'),
+            }
+        }
+        
+        # Display status table
+        for category, tools in tools_status.items():
+            table = Table(title=f"📦 {category}", box=box.ROUNDED)
+            table.add_column("Tool", style="cyan", width=15)
+            table.add_column("Status", style="white", width=15)
+            table.add_column("Path/Version", style="dim")
+            
+            for tool, status in tools.items():
+                if status:
+                    if category == 'Python Tools':
+                        table.add_row(tool, "[green]✓ Installed[/green]", "Python package")
+                    else:
+                        table.add_row(tool, "[green]✓ Installed[/green]", status)
+                else:
+                    table.add_row(tool, "[red]✗ Missing[/red]", "—")
+            
+            console.print(table)
+            console.print()
+        
+        # Installation instructions
+        console.print(Panel.fit(
+            "[bold yellow]Installation Instructions[/bold yellow]\n\n"
+            "[cyan]System Tools:[/cyan]\n"
+            "  Ubuntu/Debian: [white]sudo apt install bzip2 xz-utils zstd liblz4-tool[/white]\n"
+            "  macOS:         [white]brew install bzip2 xz zstd lz4[/white]\n"
+            "  Arch Linux:    [white]sudo pacman -S bzip2 xz zstd lz4[/white]\n\n"
+            "[cyan]Python Tools:[/cyan]\n"
+            "  logreduce:     [white]pip install logreduce[/white]\n\n"
+            "[dim]Note: gzip is usually pre-installed on most systems[/dim]",
+            border_style="yellow"
+        ))
+        console.print()
+        
+        # Options
+        console.print("[yellow]Options:[/yellow]")
+        console.print("  [1] Install logreduce (pip install logreduce)")
+        console.print("  [2] Show system tool install commands")
+        console.print("  [r] Refresh status")
+        console.print("  [b] Back to main menu")
+        console.print()
+        
+        choice = Prompt.ask("Select option", default="b")
+        
+        if choice == "1":
+            console.print()
+            console.print("[cyan]Installing logreduce...[/cyan]")
+            try:
+                result = subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "logreduce"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                console.print("[green]✓ logreduce installed successfully![/green]")
+                console.print()
+                console.print(result.stdout)
+            except subprocess.CalledProcessError as e:
+                console.print(f"[red]✗ Installation failed: {e}[/red]")
+                console.print(e.stderr)
+            
+            console.print()
+            Prompt.ask("Press enter to continue")
+            self.install_tools_menu()  # Refresh
+            
+        elif choice == "2":
+            console.print()
+            console.print(Panel(
+                "[bold]System Tool Installation Commands[/bold]\n\n"
+                "[yellow]Ubuntu/Debian:[/yellow]\n"
+                "sudo apt update\n"
+                "sudo apt install bzip2 xz-utils zstd liblz4-tool\n\n"
+                "[yellow]macOS (Homebrew):[/yellow]\n"
+                "brew install bzip2 xz zstd lz4\n\n"
+                "[yellow]Arch Linux:[/yellow]\n"
+                "sudo pacman -S bzip2 xz zstd lz4\n\n"
+                "[yellow]Fedora/RHEL:[/yellow]\n"
+                "sudo dnf install bzip2 xz zstd lz4",
+                border_style="blue"
+            ))
+            console.print()
+            Prompt.ask("Press enter to continue")
+            self.install_tools_menu()  # Refresh
+            
+        elif choice.lower() == "r":
+            self.install_tools_menu()  # Refresh
+            
+        elif choice.lower() == "b":
+            return
+        else:
+            console.print("[red]Invalid option![/red]")
+            time.sleep(1)
+            self.install_tools_menu()  # Retry
+    
+    def _check_python_package(self, package_name: str) -> bool:
+        """Check if a Python package is installed"""
+        try:
+            __import__(package_name)
+            return True
+        except ImportError:
+            return False
     
     def run(self):
         """Main loop"""

@@ -238,6 +238,149 @@ def main():
               f"{avg_vs_gzip:>7.1f}%")
         print()
     
+    # Save results to files
+    if results:
+        import json
+        
+        # Create results directory
+        results_dir = Path("evaluation/results")
+        results_dir.mkdir(exist_ok=True, parents=True)
+        
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        
+        # Save as JSON for programmatic access
+        json_file = results_dir / f"evaluation_results_{timestamp}.json"
+        json_data = {
+            'timestamp': datetime.now().isoformat(),
+            'total_datasets': len(results),
+            'total_logs': sum(r['logs'] for r in results),
+            'total_original_bytes': total_original,
+            'total_compressed_bytes': total_compressed,
+            'total_gzip_bytes': total_gzip,
+            'average_compression_ratio': avg_ratio,
+            'average_gzip_ratio': avg_gzip,
+            'average_vs_gzip_percent': avg_vs_gzip,
+            'datasets': results
+        }
+        
+        with open(json_file, 'w') as f:
+            json.dump(json_data, f, indent=2)
+        
+        print(f"✓ JSON results saved to: {json_file}")
+        
+        # Save as Markdown for thesis/reports
+        md_file = results_dir / f"evaluation_results_{timestamp}.md"
+        with open(md_file, 'w') as f:
+            f.write("# LogSim Evaluation Results\n\n")
+            f.write(f"**Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**Total Datasets**: {len(results)}\n")
+            f.write(f"**Total Logs**: {sum(r['logs'] for r in results):,}\n")
+            f.write(f"**Total Original Size**: {total_original/1024/1024:.2f} MB\n")
+            f.write(f"**Total Compressed Size**: {total_compressed/1024:.2f} KB\n")
+            f.write(f"**Average Compression Ratio**: {avg_ratio:.2f}×\n")
+            f.write(f"**vs gzip-9**: {avg_vs_gzip:.1f}%\n\n")
+            
+            f.write("## Summary Table\n\n")
+            f.write("| Dataset | Logs | Original Size | Compressed Size | Ratio | vs gzip | Compression Speed | Decompression Speed | Templates |\n")
+            f.write("|---------|------|---------------|-----------------|-------|---------|-------------------|---------------------|----------|\n")
+            
+            for r in results:
+                vs_gzip = (r['compression_ratio'] / r['gzip_ratio']) * 100
+                comp_speed = r['original_bytes'] / r['compress_time'] / 1024 / 1024
+                decomp_speed = r['original_bytes'] / r['decompress_time'] / 1024 / 1024
+                
+                f.write(f"| {r['name']} | {r['logs']:,} | "
+                       f"{r['original_bytes']/1024/1024:.2f} MB | "
+                       f"{r['compressed_bytes']/1024:.2f} KB | "
+                       f"{r['compression_ratio']:.2f}× | "
+                       f"{vs_gzip:.1f}% | "
+                       f"{comp_speed:.2f} MB/s | "
+                       f"{decomp_speed:.2f} MB/s | "
+                       f"{r['templates']} |\n")
+            
+            f.write(f"\n**Average** | {sum(r['logs'] for r in results):,} | "
+                   f"{total_original/1024/1024:.2f} MB | "
+                   f"{total_compressed/1024:.2f} KB | "
+                   f"{avg_ratio:.2f}× | "
+                   f"{avg_vs_gzip:.1f}% | — | — | — |\n\n")
+            
+            f.write("## Per-Dataset Details\n\n")
+            for r in results:
+                f.write(f"### {r['name']}\n\n")
+                f.write(f"- **Log Entries**: {r['logs']:,}\n")
+                f.write(f"- **Original Size**: {r['original_bytes']:,} bytes ({r['original_bytes']/1024/1024:.2f} MB)\n")
+                f.write(f"- **Compressed Size**: {r['compressed_bytes']:,} bytes ({r['compressed_bytes']/1024:.2f} KB)\n")
+                f.write(f"- **Compression Ratio**: {r['compression_ratio']:.2f}×\n")
+                f.write(f"- **gzip-9 Size**: {r['gzip_bytes']:,} bytes ({r['gzip_bytes']/1024:.2f} KB)\n")
+                f.write(f"- **gzip-9 Ratio**: {r['gzip_ratio']:.2f}×\n")
+                f.write(f"- **vs gzip-9**: {(r['compression_ratio']/r['gzip_ratio'])*100:.1f}%\n")
+                f.write(f"- **Compression Time**: {r['compress_time']:.3f}s ({r['original_bytes']/r['compress_time']/1024/1024:.2f} MB/s)\n")
+                f.write(f"- **Decompression Time**: {r['decompress_time']:.3f}s ({r['original_bytes']/r['decompress_time']/1024/1024:.2f} MB/s)\n")
+                f.write(f"- **Templates Extracted**: {r['templates']}\n\n")
+        
+        print(f"✓ Markdown results saved to: {md_file}")
+        print()
+        
+        # Also save a "latest" version for easy reference
+        latest_json = results_dir / "evaluation_results_latest.json"
+        latest_md = results_dir / "evaluation_results_latest.md"
+        
+        with open(latest_json, 'w') as f:
+            json.dump(json_data, f, indent=2)
+        
+        with open(latest_md, 'w') as f:
+            f.write("# LogSim Evaluation Results (Latest)\n\n")
+            f.write(f"**Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"**Total Datasets**: {len(results)}\n")
+            f.write(f"**Total Logs**: {sum(r['logs'] for r in results):,}\n")
+            f.write(f"**Total Original Size**: {total_original/1024/1024:.2f} MB\n")
+            f.write(f"**Total Compressed Size**: {total_compressed/1024:.2f} KB\n")
+            f.write(f"**Average Compression Ratio**: {avg_ratio:.2f}×\n")
+            f.write(f"**vs gzip-9**: {avg_vs_gzip:.1f}%\n\n")
+            
+            f.write("## Summary Table\n\n")
+            f.write("| Dataset | Logs | Original Size | Compressed Size | Ratio | vs gzip | Compression Speed | Decompression Speed | Templates |\n")
+            f.write("|---------|------|---------------|-----------------|-------|---------|-------------------|---------------------|----------|\n")
+            
+            for r in results:
+                vs_gzip = (r['compression_ratio'] / r['gzip_ratio']) * 100
+                comp_speed = r['original_bytes'] / r['compress_time'] / 1024 / 1024
+                decomp_speed = r['original_bytes'] / r['decompress_time'] / 1024 / 1024
+                
+                f.write(f"| {r['name']} | {r['logs']:,} | "
+                       f"{r['original_bytes']/1024/1024:.2f} MB | "
+                       f"{r['compressed_bytes']/1024:.2f} KB | "
+                       f"{r['compression_ratio']:.2f}× | "
+                       f"{vs_gzip:.1f}% | "
+                       f"{comp_speed:.2f} MB/s | "
+                       f"{decomp_speed:.2f} MB/s | "
+                       f"{r['templates']} |\n")
+            
+            f.write(f"\n**Average** | {sum(r['logs'] for r in results):,} | "
+                   f"{total_original/1024/1024:.2f} MB | "
+                   f"{total_compressed/1024:.2f} KB | "
+                   f"{avg_ratio:.2f}× | "
+                   f"{avg_vs_gzip:.1f}% | — | — | — |\n\n")
+            
+            f.write("## Per-Dataset Details\n\n")
+            for r in results:
+                f.write(f"### {r['name']}\n\n")
+                f.write(f"- **Log Entries**: {r['logs']:,}\n")
+                f.write(f"- **Original Size**: {r['original_bytes']:,} bytes ({r['original_bytes']/1024/1024:.2f} MB)\n")
+                f.write(f"- **Compressed Size**: {r['compressed_bytes']:,} bytes ({r['compressed_bytes']/1024:.2f} KB)\n")
+                f.write(f"- **Compression Ratio**: {r['compression_ratio']:.2f}×\n")
+                f.write(f"- **gzip-9 Size**: {r['gzip_bytes']:,} bytes ({r['gzip_bytes']/1024:.2f} KB)\n")
+                f.write(f"- **gzip-9 Ratio**: {r['gzip_ratio']:.2f}×\n")
+                f.write(f"- **vs gzip-9**: {(r['compression_ratio']/r['gzip_ratio'])*100:.1f}%\n")
+                f.write(f"- **Compression Time**: {r['compress_time']:.3f}s ({r['original_bytes']/r['compress_time']/1024/1024:.2f} MB/s)\n")
+                f.write(f"- **Decompression Time**: {r['decompress_time']:.3f}s ({r['original_bytes']/r['decompress_time']/1024/1024:.2f} MB/s)\n")
+                f.write(f"- **Templates Extracted**: {r['templates']}\n\n")
+        
+        print(f"✓ Latest results also saved to:")
+        print(f"  • {latest_json}")
+        print(f"  • {latest_md}")
+    
+    print()
     print("=" * 80)
     print("✅ EVALUATION COMPLETE")
     print("=" * 80)

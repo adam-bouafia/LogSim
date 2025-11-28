@@ -1,0 +1,109 @@
+{
+  "timestamp": "2025-11-28T14:21:44.572318",
+  "total_datasets": 8,
+  "total_logs": 1072831,
+  "total_original_bytes": 130991354,
+  "total_compressed_bytes": 10705381,
+  "total_gzip_bytes": 10529654,
+  "average_compression_ratio": 12.236029152068479,
+  "average_gzip_ratio": 12.440233458763222,
+  "average_vs_gzip_percent": 98.35851708594025,
+  "datasets": [
+    {
+      "name": "Apache",
+      "logs": 51978,
+      "original_bytes": 4975683,
+      "compressed_bytes": 603315,
+      "gzip_bytes": 234368,
+      "compression_ratio": 8.247239004500138,
+      "gzip_ratio": 21.230214875750956,
+      "compress_time": 6.572911977767944,
+      "decompress_time": 0.877887487411499,
+      "templates": 19
+    },
+    {
+      "name": "HPC",
+      "logs": 433490,
+      "original_bytes": 33119214,
+      "compressed_bytes": 3766213,
+      "gzip_bytes": 2981182,
+      "compression_ratio": 8.793770824963962,
+      "gzip_ratio": 11.109423711802902,
+      "compress_time": 57.805461168289185,
+      "decompress_time": 5.948976755142212,
+      "templates": 49
+    },
+    {
+      "name": "HealthApp",
+      "logs": 212394,
+      "original_bytes": 20483278,
+      "compressed_bytes": 2350232,
+      "gzip_bytes": 1874754,
+      "compression_ratio": 8.715428093907326,
+      "gzip_ratio": 10.925848404644023,
+      "compress_time": 11.754024028778076,
+      "decompress_time": 2.36240553855896,
+      "templates": 2
+    },
+    {
+      "name": "Linux",
+      "logs": 25567,
+      "original_bytes": 2344672,
+      "compressed_bytes": 246036,
+      "gzip_bytes": 208685,
+      "compression_ratio": 9.529792388105806,
+      "gzip_ratio": 11.235460143278146,
+      "compress_time": 3.8235056400299072,
+      "decompress_time": 0.32554197311401367,
+      "templates": 73
+    },
+    {
+      "name": "Mac",
+      "logs": 116735,
+      "original_bytes": 16723167,
+      "compressed_bytes": 875747,
+      "gzip_bytes": 1428148,
+      "compression_ratio": 19.095888424396545,
+      "gzip_ratio": 11.70968765141988,
+      "compress_time": 22.827205419540405,
+      "decompress_time": 1.4600770473480225,
+      "templates": 184
+    },
+    {
+      "name": "OpenStack",
+      "logs": 137074,
+      "original_bytes": 40506364,
+      "compressed_bytes": 1944619,
+      "gzip_bytes": 3242939,
+      "compression_ratio": 20.829974406297584,
+      "gzip_ratio": 12.490633958887294,
+      "compress_time": 32.1465163230896,
+      "decompress_time": 3.0529627799987793,
+      "templates": 35
+    },
+    {
+      "name": "Proxifier",
+      "logs": 21320,
+      "original_bytes": 2519085,
+      "compressed_bytes": 208293,
+      "gzip_bytes": 160630,
+      "compression_ratio": 12.093949388601633,
+      "gzip_ratio": 15.682531283072901,
+      "compress_time": 3.204810380935669,
+      "decompress_time": 0.29548144340515137,
+      "templates": 26
+    },
+    {
+      "name": "Zookeeper",
+      "logs": 74273,
+      "original_bytes": 10319891,
+      "compressed_bytes": 710926,
+      "gzip_bytes": 398948,
+      "compression_ratio": 14.516125447655593,
+      "gzip_ratio": 25.867759708032125,
+      "compress_time": 12.887708187103271,
+      "decompress_time": 1.3714308738708496,
+      "templates": 30
+    }
+  ]
+}
