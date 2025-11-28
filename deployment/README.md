@@ -261,6 +261,35 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u adam-bouafia --password-stdin
 docker push ghcr.io/adam-bouafia/logpress:latest
 ```
 
+### Publishing using a Personal Access Token (recommended for local push)
+
+1. Create a GitHub Personal Access Token (PAT) with the `write:packages` scope.
+2. Export it locally and run the publish script (do not paste tokens in public chats):
+
+```bash
+# locally
+export GITHUB_TOKEN=<YOUR_GHCR_PAT>
+./scripts/publish_docker.sh latest
+```
+
+This script will build, tag, and push `ghcr.io/adam-bouafia/logpress:latest`. The script uses `GITHUB_TOKEN` as the PAT. If you prefer, you can pass a different tag value.
+
+### GitHub Actions (recommended for automated builds)
+
+In your workflow, add the `secrets.GITHUB_TOKEN` or a PAT (with `write:packages`) and use it to log in and push the image:
+
+```yaml
+- name: Publish to GHCR
+  env:
+    GHCR_TOKEN: ${{ secrets.GHCR_PAT }} # or secrets.GITHUB_TOKEN
+  run: |
+    echo "${GHCR_TOKEN}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    docker tag logpress:${{ github.sha }} ghcr.io/adam-bouafia/logpress:latest
+    docker push ghcr.io/adam-bouafia/logpress:latest
+```
+
+NOTE: GitHub Actions' built-in `GITHUB_TOKEN` can be used, but a PAT with `write:packages` is sometimes required depending on your registry and org settings.
+
 ### 3. Deploy to Server
 
 ```bash
