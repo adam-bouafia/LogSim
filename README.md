@@ -11,8 +11,7 @@
 
 - **Automatic Schema Discovery**: Extract implicit log schemas without manual annotation
 - **Semantic-Aware Compression**: Achieve 8-30× compression while maintaining queryability
-- **No ML Models**: Pure constraint-based approach using pattern matching and heuristics
-- **Real-World Validation**: Tested on 5 diverse log sources (497K+ entries)
+- **Real-World Validation**: Tested on diverse log sources (2M+ entries)
 
 ## 🚀 Quick Start
 
