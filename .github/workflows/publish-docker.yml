@@ -1,0 +1,56 @@
+name: Build & Publish Docker to GHCR
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build image for tests (single-arch)
+        run: |
+          docker build -f deployment/Dockerfile -t logpress:${{ github.sha }} --load .
+
+      - name: Run unit tests in container
+        run: |
+          docker run --rm logpress:${{ github.sha }} pytest logpress/tests/unit -q
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Build and push multi-arch image to GHCR
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/adam-bouafia/logpress:${{ github.ref_name }} \
+            -t ghcr.io/adam-bouafia/logpress:latest \
+            --push \
+            -f deployment/Dockerfile .
+
+      - name: Show pushed image info
+        run: |
+          echo "Pushed: ghcr.io/adam-bouafia/logpress:${{ github.ref_name }} and latest"
