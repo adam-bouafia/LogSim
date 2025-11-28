@@ -12,6 +12,9 @@ venv/
 env/
 ENV/
 
+# PyPI credentials (NEVER commit these!)
+.pypirc
+
 # Compressed files (runtime generated)
 compressed/*.lsc
 

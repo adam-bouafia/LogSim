@@ -10,10 +10,16 @@ MCP Architecture:
 - Context: Domain implementations (Tokenization, Extraction, Encoding)
 - Services: Application orchestration (Compressor, QueryEngine)
 - CLI: User interface (compress, query commands)
+
+Example usage:
+    >>> from logsim import SemanticCompressor, QueryEngine
+    >>> compressor = SemanticCompressor(min_support=3)
+    >>> compressed, stats = compressor.compress(log_lines)
+    >>> print(f"Compression ratio: {stats.compression_ratio:.2f}×")
 """
 
-__version__ = "1.0.0"
-__author__ = "Master's Thesis Project"
+__version__ = "0.1.0"
+__author__ = "Adam Bouafia"
 __license__ = "MIT"
 
 # Core MCP layers
