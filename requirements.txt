@@ -16,3 +16,4 @@ pytest-benchmark>=4.0.0   # Performance benchmarking
 
 # Interactive CLI
 rich>=13.0.0              # Rich terminal UI with colors, tables, progress bars
+click>=8.1.0             # CLI command parser

@@ -1,0 +1,20 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+recursive-include logsim *.py
+recursive-include tests *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.pyc
+recursive-exclude * *.pyo
+recursive-exclude * .DS_Store
+recursive-exclude * *.so
+exclude .gitignore
+exclude .github
+prune thesis
+prune htmlcov
+prune data/datasets
+prune evaluation/compressed
+prune .pytest_cache
+prune .venv
+prune venv

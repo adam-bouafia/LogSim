@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logsim"
+version = "0.1.0"
+description = "Semantic-aware log compression with automatic schema extraction and queryable storage"
+readme = "README.md"
+authors = [
+    {name = "Adam Bouafia", email = "adam.bouafia@vu.nl"}
+]
+license = {text = "MIT"}
+keywords = ["logs", "compression", "schema-extraction", "semantic-compression", "log-analysis", "columnar-storage"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Archiving :: Compression",
+    "Topic :: System :: Monitoring",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "msgpack>=1.0.0",
+    "zstandard>=0.21.0",
+    "python-dateutil>=2.8.0",
+    "regex>=2023.0.0",
+    "rich>=13.0.0",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-mock>=3.12.0",
+]
+benchmarks = [
+    "logreduce>=1.0.0",
+]
+all = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-mock>=3.12.0",
+    "logreduce>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/adam-bouafia/LogSim"
+Documentation = "https://github.com/adam-bouafia/LogSim#readme"
+Repository = "https://github.com/adam-bouafia/LogSim"
+Issues = "https://github.com/adam-bouafia/LogSim/issues"
+Changelog = "https://github.com/adam-bouafia/LogSim/releases"
+
+[project.scripts]
+logsim = "logsim.__main__:main"
+
+[tool.setuptools]
+packages = ["logsim", "logsim.cli", "logsim.context", "logsim.context.classification", 
+            "logsim.context.encoding", "logsim.context.extraction", "logsim.context.tokenization",
+            "logsim.models", "logsim.protocols", "logsim.services"]
+
+[tool.setuptools.package-data]
+logsim = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
