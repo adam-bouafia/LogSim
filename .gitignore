@@ -42,6 +42,7 @@ Thumbs.db
 # Research/Thesis artifacts (not for GitHub)
 thesis_latex/
 docs/THESIS_*.md
+*.tex
 *.aux
 *.out
 *.toc
