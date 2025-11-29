@@ -6,7 +6,42 @@ on:
       - 'v*'
 
 jobs:
-  build-and-publish:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run unit tests
+        run: |
+          pytest logpress/tests/unit -v
+
+      - name: Run integration tests
+        run: |
+          pytest logpress/tests/integration -v
+
+      - name: Build Docker image for tests
+        run: |
+          docker build -f deployment/Dockerfile -t logpress:${{ github.sha }} --load .
+
+      - name: Run tests in Docker container
+        run: |
+          docker run --rm logpress:${{ github.sha }} pytest logpress/tests/unit -q
+
+  publish-docker:
+    name: Publish Docker Images
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,14 +61,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
-      - name: Build image for tests (single-arch)
-        run: |
-          docker build -f deployment/Dockerfile -t logpress:${{ github.sha }} --load .
-
-      - name: Run unit tests in container
-        run: |
-          docker run --rm logpress:${{ github.sha }} pytest logpress/tests/unit -q
 
       - name: Login to GHCR
         uses: docker/login-action@v2
@@ -69,7 +96,19 @@ jobs:
 
       - name: Show pushed image info
         run: |
-          echo "Pushed: ghcr.io/adam-bouafia/logpress:${{ github.ref_name }} and latest"
+          echo "✅ Pushed Docker images:"
+          echo "  - ghcr.io/adam-bouafia/logpress:${{ github.ref_name }}"
+          echo "  - ghcr.io/adam-bouafia/logpress:latest"
+          echo "  - docker.io/adambouafia/logpress:${{ github.ref_name }}"
+          echo "  - docker.io/adambouafia/logpress:latest"
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -80,6 +119,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install build twine
+
+      - name: Clean old distribution files
+        run: |
+          rm -rf dist/ build/ *.egg-info/
 
       - name: Build Python package
         run: |
@@ -96,4 +139,4 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"  # Remove 'v' prefix
-          echo "Published to PyPI: https://pypi.org/project/LogPress/${VERSION}/"
+          echo "✅ Published to PyPI: https://pypi.org/project/LogPress/${VERSION}/"
