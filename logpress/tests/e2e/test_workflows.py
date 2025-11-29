@@ -15,7 +15,7 @@ class TestEndToEndWorkflows:
         output_file = test_output_dir / "compressed" / "apache_test.lsc"
         
         result = subprocess.run([
-            'python', '-m', 'logpress', 
+            'python3', '-m', 'logpress', 
             'compress',
             '-i', str(input_file),
             '-o', str(output_file),
@@ -33,7 +33,7 @@ class TestEndToEndWorkflows:
             pytest.skip("Compressed file not available")
         
         result = subprocess.run([
-            'python', '-m', 'logpress',
+            'python3', '-m', 'logpress',
             'query',
             '-i', str(compressed_file),
             '-q', 'severity=notice'
@@ -45,7 +45,7 @@ class TestEndToEndWorkflows:
     def test_cli_help_command(self):
         """Test that CLI help command works"""
         result = subprocess.run([
-            'python', '-m', 'logpress',
+            'python3', '-m', 'logpress',
             '--help'
         ], capture_output=True, text=True)
         

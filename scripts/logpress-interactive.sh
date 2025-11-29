@@ -190,9 +190,9 @@ compress_datasets() {
         output="$COMPRESSED_DIR/${name,,}_full.lsc"
         
         if [[ "$measure" =~ ^[Yy]$ ]]; then
-            python -m logpress compress -i "$path" -o "$output" --min-support "$min_support" -m
+            python3 -m logpress compress -i "$path" -o "$output" --min-support "$min_support" -m
         else
-            python -m logpress compress -i "$path" -o "$output" --min-support "$min_support"
+            python3 -m logpress compress -i "$path" -o "$output" --min-support "$min_support"
         fi
     done
     
@@ -245,7 +245,7 @@ query_files() {
         read -p "> " query
         
         if [ -n "$query" ]; then
-            python -m logpress query -i "$selected_file" -q "$query"
+            python3 -m logpress query -i "$selected_file" -q "$query"
         fi
     fi
     
@@ -271,7 +271,7 @@ run_evaluation() {
         echo ""
         echo -e "${CYAN}Running full evaluation...${NC}"
         cd evaluation
-        python run_full_evaluation.py
+        python3 run_full_evaluation.py
         cd ..
         echo ""
         echo -e "${GREEN}✓ Evaluation complete!${NC}"
@@ -299,7 +299,7 @@ benchmark_comparison() {
         echo ""
         echo -e "${CYAN}Running benchmarks...${NC}"
         cd evaluation
-        python run_query_benchmarks.py
+        python3 run_query_benchmarks.py
         cd ..
         echo ""
         echo -e "${GREEN}✓ Benchmarks complete!${NC}"
@@ -342,7 +342,7 @@ view_results() {
             ;;
         2)
             if [ -f "$RESULTS_DIR/query_performance.json" ]; then
-                cat "$RESULTS_DIR/query_performance.json" | python -m json.tool | less
+                cat "$RESULTS_DIR/query_performance.json" | python3 -m json.tool | less
             else
                 echo -e "${RED}File not found!${NC}"
             fi
@@ -383,8 +383,8 @@ settings_menu() {
     echo ""
     
     echo -e "${GREEN}ℹ️  System Info:${NC}"
-    echo -e "  Python:       ${CYAN}$(python --version 2>&1)${NC}"
-    echo -e "  logpress:       ${CYAN}$(python -m logpress --version 2>&1)${NC}"
+    echo -e "  Python:       ${CYAN}$(python3 --version 2>&1)${NC}"
+    echo -e "  logpress:       ${CYAN}$(python3 -m logpress --version 2>&1)${NC}"
     echo -e "  Working dir:  ${CYAN}$(pwd)${NC}"
     echo ""
     
