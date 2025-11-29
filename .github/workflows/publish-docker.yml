@@ -115,6 +115,23 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix (v1.0.5 -> 1.0.5)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Building version: $VERSION"
+
+      - name: Update version in source files
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update setup.py
+          sed -i "s/version=\"[0-9.]*\"/version=\"$VERSION\"/" setup.py
+          # Update pyproject.toml
+          sed -i "s/^version = \"[0-9.]*\"/version = \"$VERSION\"/" pyproject.toml
+          echo "✅ Updated version to $VERSION in setup.py and pyproject.toml"
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
@@ -127,6 +144,8 @@ jobs:
       - name: Build Python package
         run: |
           python -m build
+          echo "📦 Built packages:"
+          ls -lh dist/
 
       - name: Publish to PyPI
         env:
