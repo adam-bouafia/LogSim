@@ -21,10 +21,10 @@ if requirements_file.exists():
 
 setup(
     name="LogPress",
-    version="1.0.7",
+    version="1.1.0",
     author="Adam Bouafia",
     author_email="adam.bouafia@example.com",
-    description="Automatic Schema Extraction & Semantic-Aware Compression for System Logs",
+    description="Semantic log compression library with automatic schema extraction and queryable compression",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/adam-bouafia/logpress",
@@ -32,7 +32,23 @@ setup(
         "Bug Tracker": "https://github.com/adam-bouafia/logpress/issues",
         "Documentation": "https://github.com/adam-bouafia/logpress#readme",
         "Source Code": "https://github.com/adam-bouafia/logpress",
+        "Changelog": "https://github.com/adam-bouafia/logpress/releases",
+        "Examples": "https://github.com/adam-bouafia/logpress/tree/main/examples",
     },
+    keywords=[
+        "log-compression",
+        "log-analysis",
+        "schema-extraction",
+        "semantic-compression",
+        "log-parsing",
+        "log-management",
+        "system-logs",
+        "apache-logs",
+        "syslog",
+        "queryable-compression",
+        "log-mining",
+        "log-templates",
+    ],
     # Only include the packages under 'logpress' namespace. Historically this
     # repository included a legacy 'logsim' package namespace; we only want
     # packages for 'logpress' in new releases.
@@ -59,12 +75,43 @@ setup(
             "flake8>=6.0.0",
             "mypy>=1.0.0",
         ],
+        "web": [
+            # Flask REST API server (example 07_flask_api.py)
+            # Enables HTTP endpoints for remote log compression/querying
+            "flask>=3.0.0",
+        ],
+        "api": [
+            # FastAPI + async server (example 08_fastapi_service.py)
+            # Modern API with OpenAPI docs, better for production deployments
+            "fastapi>=0.100.0",
+            "uvicorn>=0.23.0",
+            "aiofiles>=23.0.0",
+            "python-multipart>=0.0.6",
+        ],
+        "monitoring": [
+            # File system monitoring (example 09_log_rotation_handler.py)
+            # Auto-compress logs when they rotate in production environments
+            "watchdog>=3.0.0",
+        ],
+        "all": [
+            # Install all optional dependencies
+            "flask>=3.0.0",
+            "fastapi>=0.100.0",
+            "uvicorn>=0.23.0",
+            "aiofiles>=23.0.0",
+            "python-multipart>=0.0.6",
+            "watchdog>=3.0.0",
+        ],
     },
     entry_points={
         "console_scripts": [
             "logpress=logpress.__main__:cli",
         ],
     },
+    package_data={
+        "": ["*.md", "*.txt"],
+    },
     include_package_data=True,
     zip_safe=False,
+    license="MIT",
 )
