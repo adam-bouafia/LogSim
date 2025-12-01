@@ -71,7 +71,31 @@ echo -e "${GREEN}Creating release:${NC} v${CURRENT_VERSION} → v${NEW_VERSION}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
+# Check for uncommitted changes
+echo -e "${YELLOW}🔍 Checking for uncommitted changes...${NC}"
+if ! git diff-index --quiet HEAD --; then
+    echo -e "${YELLOW}⚠️  Found uncommitted changes. Committing all changes first...${NC}"
+    git status --short
+    echo ""
+    read -p "Commit all these changes? (y/n): " commit_choice
+    if [[ "$commit_choice" != "y" ]]; then
+        echo -e "${RED}Cannot proceed with uncommitted changes. Please commit or stash them first.${NC}"
+        exit 1
+    fi
+    
+    read -p "Commit message (default: 'Pre-release commit for v${NEW_VERSION}'): " PRE_COMMIT_MSG
+    PRE_COMMIT_MSG="${PRE_COMMIT_MSG:-Pre-release commit for v${NEW_VERSION}}"
+    
+    git add -A
+    git commit -m "${PRE_COMMIT_MSG}"
+    echo -e "${GREEN}✓${NC} Committed all changes"
+    echo ""
+else
+    echo -e "${GREEN}✓${NC} Working directory is clean"
+fi
+
 # Update version in source files
+echo ""
 echo -e "${YELLOW}📝 Updating version in source files...${NC}"
 sed -i "s/version=\"${CURRENT_VERSION}\"/version=\"${NEW_VERSION}\"/" setup.py
 sed -i "s/version = \"${CURRENT_VERSION}\"/version = \"${NEW_VERSION}\"/" pyproject.toml
