@@ -1,265 +1,322 @@
-# LogPress - Semantic Log Compression System
+# LogPress
 
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](logpress/tests/)
 [![Coverage](https://img.shields.io/badge/coverage-42%25-yellow.svg)](htmlcov/index.html)
 [![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![PyPI](https://img.shields.io/badge/pypi-1.0.7-blue.svg)](https://pypi.org/project/LogPress/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Master's Thesis Research Project**: Automatic schema extraction from unstructured system logs using constraint-based parsing and semantic-aware compression.
+**Semantic log compression library with automatic schema extraction**
 
-## 🎯 Research Goals
-
-- **Automatic Schema Discovery**: Extract implicit log schemas without manual annotation
-- **Semantic-Aware Compression**: Achieve 8-30× compression while maintaining queryability
-- **Real-World Validation**: Tested on diverse log sources (2M+ entries)
+LogPress compresses system logs 10-20× while maintaining queryability through selective decompression. Automatically discovers log schemas using constraint-based pattern matching—no manual annotation required.
 
 ## 🚀 Quick Start
 
 ### Installation
 
-Preferred: Install from PyPI
-
 ```bash
-# Install from PyPI (recommended)
+# Core library
 pip install LogPress
+
+# Optional: Web API server (Flask REST endpoints)
+pip install LogPress[web]
+
+# Optional: Modern async API (FastAPI + OpenAPI docs)
+pip install LogPress[api]
+
+# Optional: Auto-compress on log rotation
+pip install LogPress[monitoring]
+
+# Install everything
+pip install LogPress[all]
 ```
 
-Alternative: Docker (no Python setup required)
+**Why optional dependencies?**
+- **`web`**: Adds Flask for HTTP REST API (example 07) - useful for remote compression via web interface
+- **`api`**: Adds FastAPI + async support (example 08) - better for production/high-traffic deployments
+- **`monitoring`**: Adds Watchdog for file system monitoring (example 09) - auto-compress logs when they rotate in production
+- **Core library works without any of these** - only needed if you want web servers or file monitoring features
+
+### Basic Usage (Library)
+
+```python
+from logpress import LogPress
+
+# Compress logs
+lp = LogPress()
+stats = lp.compress_file("application.log", "compressed.lsc")
+print(f"Compressed {stats['compression_ratio']:.1f}×")
+
+# Query compressed logs (6× faster than full decompression)
+errors = lp.query("compressed.lsc", severity="ERROR", limit=100)
+for log in errors:
+    print(log['message'])
+```
+
+### One-Liner Functions
+
+```python
+from logpress import compress, query
+
+# Compress
+stats = compress("app.log", "app.lsc")
+
+# Query
+errors = query("app.lsc", severity="ERROR")
+```
+
+### Interactive Tutorial
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adam-bouafia/LogPress/blob/main/notebooks/quickstart.ipynb)
+
+Try LogPress in your browser with our [interactive Jupyter notebook](notebooks/quickstart.ipynb)! No installation required.
+
+### More Examples
+
+See [`examples/`](examples/) directory for complete examples:
+- [01_basic_compression.py](examples/01_basic_compression.py) - Compress logs in 5 lines
+- [02_query_compressed_logs.py](examples/02_query_compressed_logs.py) - Fast querying
+- [03_streaming_large_files.py](examples/03_streaming_large_files.py) - Handle large files
+- [04_custom_semantic_types.py](examples/04_custom_semantic_types.py) - Extend pattern recognition
+- [05_schema_extraction_only.py](examples/05_schema_extraction_only.py) - Extract templates
+- [06_batch_processing.py](examples/06_batch_processing.py) - Parallel compression
+- [07_flask_api.py](examples/07_flask_api.py) - REST API service
+- [08_fastapi_service.py](examples/08_fastapi_service.py) - Async microservice
+- [09_log_rotation_handler.py](examples/09_log_rotation_handler.py) - Auto-compress on rotation
+
+---
+
+## 📖 Library Usage
+
+### Compression
+
+```python
+from logpress import LogPress
+
+lp = LogPress(min_support=3)  # Minimum logs per template
+
+# From file
+stats = lp.compress_file("input.log", "output.lsc")
+
+# From list
+logs = ["[INFO] Started", "[ERROR] Failed", ...]
+compressed, stats = lp.compress_lines(logs)
+
+# To bytes (for network/database)
+data = lp.compress_to_bytes(logs)
+```
+
+### Querying
+
+```python
+# Filter by severity
+errors = lp.query("app.lsc", severity="ERROR")
+warnings = lp.query("app.lsc", severity=["WARN", "ERROR"])
+
+# Time range
+recent = lp.query("app.lsc", 
+                  timestamp_after="2024-12-01 10:00:00",
+                  limit=100)
+
+# Count (metadata-only, very fast)
+total = lp.count("app.lsc")
+```
+
+### Schema Extraction Only
+
+```python
+# Extract templates without compression
+templates = lp.extract_schemas(logs)
+for t in templates:
+    print(f"{t['pattern']} - {t['count']} matches")
+```
+
+---
+
+## 🔬 Research Background
+
+**Master's Thesis Project** by Adam Bouafia (VU Amsterdam)
+
+### Research Goals
+
+- **Automatic Schema Discovery**: Extract implicit log schemas without manual annotation
+- **Semantic-Aware Compression**: Achieve 10-30× compression while maintaining queryability
+- **Real-World Validation**: Tested on 8 datasets with 1M+ log entries
+
+### Key Results
+
+- **12.2× average compression** (comparable to gzip's 12.4×)
+- **6.5× query speedup** through selective decompression
+- **93.7% accuracy** for automatic schema extraction
+- **Outperforms gzip** on structured logs (Mac: 19.1× vs 11.7×, OpenStack: 20.8× vs 12.5×)
+
+---
+
+## 🖥️ Alternative Interfaces
+
+### CLI Tools
+
+For batch processing and automation:
 
 ```bash
-# Interactive mode
-docker-compose -f deployment/docker-compose.yml run --rm logpress-interactive
+# Compress logs via command line
+python -m logpress compress -i app.log -o app.lsc -m
+
+# Query compressed logs
+python -m logpress query -c app.lsc --severity ERROR --limit 20
+
+# Interactive mode (rich terminal UI)
+python -m logpress.cli.interactive
 ```
 
-From source (developer mode)
+**CLI Features**:
+- 📊 Real-time compression progress
+- 🎨 Rich terminal UI with tables
+- 🔍 Interactive query mode
+- ⚡ Batch processing support
+
+See [CLI documentation](documentation/CLI.md) for complete reference.
+
+### Docker
+
+Run LogPress in a container:
+
+```bash
+# Pull from GHCR
+docker pull ghcr.io/adam-bouafia/logpress:latest
+
+# Compress a log file
+docker run --rm -v "$(pwd):/data" \
+  ghcr.io/adam-bouafia/logpress:latest \
+  compress -i /data/app.log -o /data/app.lsc
+
+# Query compressed logs
+docker run --rm -v "$(pwd):/data" \
+  ghcr.io/adam-bouafia/logpress:latest \
+  query -c /data/app.lsc --severity ERROR
+```
+
+**Docker Compose** for development:
 
 ```bash
 # Clone repository
 git clone https://github.com/adam-bouafia/LogPress.git
 cd LogPress
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\\Scripts\\activate
-
-# Install dependencies
-pip install -r requirements.txt
-pip install -e .
-```
-
-### Interactive Mode (Recommended)
-
-```bash
-# Beautiful terminal UI with dataset auto-discovery
-python -m logpress.cli.interactive
-```
-
-**Features**:
-- 🔍 Auto-discovers datasets in `data/datasets/`
-- 📊 Real-time compression progress
-- 🎨 Rich terminal UI with tables and progress bars
-- ⚡ Query compressed logs interactively
-
-### Command-Line Usage
-
-```bash
-# Compress logs
-python -m logpress compress \
-  -i data/datasets/Apache/Apache_full.log \
-  -o evaluation/compressed/apache.lsc \
-  --min-support 3 \
-  -m
-
-# Query compressed logs
-python -m logpress query \
-  -c evaluation/compressed/apache.lsc \
-  --severity ERROR \
-  --limit 20
-
-# Run full evaluation
-python evaluation/run_full_evaluation.py
-```
-
-### Docker Usage
-
-```bash
-# Interactive mode (Python rich UI)
-docker-compose -f deployment/docker-compose.yml run --rm logpress-interactive
-
-# Bash menu (alternative)
-docker-compose -f deployment/docker-compose.yml run --rm logpress-interactive-bash
-
-# Run specific command
-docker-compose -f deployment/docker-compose.yml run --rm logpress-cli \
-  compress -i /app/data/datasets/Apache/Apache_full.log -o /app/evaluation/compressed/apache.lsc -m
-```
-
-
-### Pre-built Docker Image (GHCR & Docker Hub)
-
-We publish pre-built Docker images to the GitHub Container Registry (GHCR) and mirror to Docker Hub. There are two ways to run LogPress with Docker:
-
-1) From a local clone (recommended for development):
-
-```bash
-# Clone repository and run with docker-compose
-git clone https://github.com/adam-bouafia/LogPress.git
-cd LogPress
+# Run interactive mode
 docker-compose -f deployment/docker-compose.yml run --rm logpress-interactive
 ```
 
-2) Use pre-built images from GHCR or Docker Hub (recommended for quick start):
+See [Docker guide](deployment/README.md) for production deployment.
+
+
+### Available on Multiple Registries
+
+LogPress Docker images are published to:
+- **GitHub Container Registry**: `ghcr.io/adam-bouafia/logpress:latest`
+- **Docker Hub**: `adambouafia/logpress:latest`
+
+Both registries contain the same image with version tags (e.g., `v1.0.7`).
+
+---
+
+## 📁 For Developers
+
+### Architecture
+
+LogPress follows the **Model-Context-Protocol** design pattern:
+
+```
+logpress/
+├── api.py               # High-level API (LogPress class)
+├── models/              # Data structures (Token, LogTemplate, CompressedLog)
+├── protocols/           # Abstract interfaces (EncoderProtocol, CompressorProtocol)
+├── context/             # Core algorithms
+│   ├── tokenization/    # FSM-based log parsing
+│   ├── extraction/      # Template generation (log alignment)
+│   ├── classification/  # Semantic type detection (pattern-based)
+│   └── encoding/        # Compression codecs (delta, dictionary, varint)
+└── services/            # High-level orchestration
+    ├── compressor.py    # 6-stage compression pipeline
+    ├── query_engine.py  # Queryable decompression with indexes
+    └── evaluator.py     # Accuracy metrics vs ground truth
+```
+
+See [MCP Architecture](documentation/MCP_ARCHITECTURE.md) for design details.
+
+### Testing
+
+**Test Suite**: 25 tests, 100% passing, 42% coverage
 
 ```bash
-# Pull the image from GHCR
-docker pull ghcr.io/adam-bouafia/logpress:latest
+# Run all tests
+bash scripts/run-tests.sh
 
-# Or pull from Docker Hub mirror
-docker pull adambouafia/logpress:latest
+# Watch mode (re-run on changes)
+pip install pytest-watch
+ptw logpress/tests/ -- -v
 
-# Run the CLI (example: show version)
-docker run --rm ghcr.io/adam-bouafia/logpress:latest python -m logpress --version
-
-# Run a compress command using the GHCR image
-docker run --rm \
-  -v "$(pwd)/data:/app/data:ro" \
-  -v "$(pwd)/evaluation:/app/evaluation:rw" \
-  ghcr.io/adam-bouafia/logpress:latest \
-  compress -i /app/data/datasets/Apache/Apache_full.log -o /app/evaluation/compressed/apache.lsc -m
+# Coverage report
+open htmlcov/index.html
 ```
 
-If you prefer Docker Hub, images are mirrored to Docker Hub as `adambouafia/logpress:latest` and to specific version tags such as `adambouafia/logpress:1.0.1`.
+See [Testing Guide](documentation/TESTING.md) for details.
 
-```bash
-# Pull the image from GHCR
-docker pull ghcr.io/adam-bouafia/logpress:latest
+### Research Datasets
 
-# Run the CLI (example: show version)
-docker run --rm ghcr.io/adam-bouafia/logpress:latest python -m logpress --version
+The repository includes 8 real-world log sources (~1.07M entries) for evaluation:
 
-# Run a compress command using the GHCR image
-docker run --rm \
-  -v "$(pwd)/data:/app/data:ro" \
-  -v "$(pwd)/evaluation:/app/evaluation:rw" \
-  ghcr.io/adam-bouafia/logpress:latest \
-  compress -i /app/data/datasets/Apache/Apache_full.log -o /app/evaluation/compressed/apache.lsc -m
-```
+| Dataset | Lines | Description |
+|---------|-------|-------------|
+| Apache | 52K | Web server logs |
+| HealthApp | 212K | Android health tracking |
+| HPC | 433K | High-performance computing cluster |
+| Linux | 26K | Linux system logs |
+| Mac | 117K | macOS system logs |
+| OpenStack | 137K | Cloud infrastructure logs |
+| Proxifier | 21K | Network proxy logs |
+| Zookeeper | 74K | Distributed coordination logs |
 
-If you prefer Docker Hub, you or the CI workflow can mirror the image to Docker Hub with the `adambouafia/logpress:latest` tag. For example:
+Datasets are in `data/datasets/`, ground truth annotations in `data/ground_truth/`.
 
-```bash
-# (Optional) Tag and push to Docker Hub (requires Docker Hub credentials)
-docker tag ghcr.io/adam-bouafia/logpress:latest adambouafia/logpress:latest
-docker login --username <docker-hub-username>
-docker push adambouafia/logpress:latest
-```
+---
 
-## 📁 Project Structure (MCP Architecture)
+## 📖 How It Works
 
-```
-LogPress/
-├── logpress/                  # Core Python package (Model-Context-Protocol)
-│   ├── models/             # Data structures (Token, LogTemplate, CompressedLog)
-│   ├── protocols/          # Abstract interfaces (EncoderProtocol, CompressorProtocol)
-│   ├── context/           # Business logpress
-│   │   ├── tokenization/  # Smart log tokenization (FSM-based)
-│   │   ├── extraction/    # Template generation (log alignment algorithm)
-│   │   ├── classification/# Semantic type recognition (pattern-based)
-│   │   └── encoding/      # Compression codecs (delta, dictionary, varint)
-│   ├── services/          # High-level orchestration
-│   │   ├── compressor.py  # 6-stage compression pipeline
-│   │   ├── query_engine.py# Queryable decompression
-│   │   └── evaluator.py   # Accuracy metrics vs ground truth
-│   ├── cli/              # User interfaces
-│   │   ├── interactive.py # Rich terminal UI
-│   │   └── commands.py    # Click-based CLI
-│   └── tests/            # Test suite (25 tests, 100% passing)
-│       ├── unit/         # Component testing
-│       ├── integration/  # Workflow testing
-│       ├── e2e/          # End-to-end testing
-│       └── performance/  # Benchmarks
-│
-├── data/                  # Input data
-│   ├── datasets/         # 8 real-world log sources (~1.07M entries)
-│   │   ├── Apache/       # Web server logs (52K lines)
-│   │   ├── HealthApp/    # Android health tracking (212K lines)
-│   │   ├── HPC/          # High-performance computing cluster logs (433K lines)
-│   │   ├── Linux/        # Linux system logs (26K lines)
-│   │   ├── Mac/          # macOS system logs (117K lines)
-│   │   ├── OpenStack/    # Cloud infrastructure logs (137K lines)
-│   │   ├── Proxifier/    # Network proxy logs (21K lines)
-│   │   └── Zookeeper/    # Distributed coordination logs (74K lines)
-│   └── ground_truth/     # Manual annotations for validation
-│
-├── evaluation/           # Outputs & results
-│   ├── compressed/       # .lsc compressed files
-│   ├── results/          # Evaluation metrics (JSON/Markdown)
-│   └── schema_versions/  # Schema evolution tracking
-│
-├── deployment/          # Infrastructure
-│   ├── Dockerfile       # Container image
-│   ├── docker-compose.yml# Service orchestration
-│   └── Makefile         # Build automation
-│
-├── documentation/       # Project documentation
-│   ├── README.md        # Documentation index
-│   ├── TESTING.md       # Test strategy
-│   ├── MCP_ARCHITECTURE.md # System design
-│   └── API.md           # Python API reference
-│
-└── scripts/            # Automation scripts
-    ├── logpress-interactive.sh  # Bash interactive menu
-    ├── run-tests.sh           # Test suite runner
-    └── run-pre-production-tests.sh # Validation
-```
+### Schema Extraction
 
-See individual README files in each directory for detailed information.
+LogPress automatically discovers log structure using a 6-stage pipeline:
 
-## 🔬 Research Methodology
-
-### 1. Schema Extraction Pipeline
-
-**6-Stage Process**:
-1. **Tokenization**: FSM-based parser handles diverse log formats
-2. **Semantic Classification**: Pattern-based field type detection (timestamp, IP, severity, etc.)
-3. **Field Grouping**: Identify related fields (ip+port, user+action)
-4. **Template Generation**: Log alignment algorithm extracts schemas
-5. **Schema Versioning**: Track format evolution over time
-6. **Validation**: Compare against manual ground truth (precision/recall)
+1. **Tokenization**: Parse diverse log formats (Apache, Syslog, JSON, custom)
+2. **Semantic Classification**: Detect field types (timestamp, IP, severity, metrics)
+3. **Field Grouping**: Find related fields (host:port, user+action)
+4. **Template Generation**: Extract patterns using log alignment algorithm
+5. **Schema Versioning**: Track format changes over time
+6. **Validation**: Verify against ground truth (93.7% accuracy)
 
 **Example**:
 ```
-Raw Logs:
+Input:
   [Thu Jun 09 06:07:04 2005] [notice] LDAP: Built with OpenLDAP
-  [Thu Jun 09 06:07:05 2005] [notice] LDAP: SSL support unavailable
+  [Thu Jun 09 06:07:05 2005] [notice] LDAP: SSL unavailable
   
-Extracted Template:
+Detected Schema:
   [TIMESTAMP] [SEVERITY] LDAP: [MESSAGE]
 ```
 
-### 2. Semantic-Aware Compression
+### Compression Strategy
 
-**Category-Specific Codecs**:
-- **Timestamps**: Delta encoding (8-10× compression)
-- **Severity/Status**: Dictionary encoding (5-7× compression)
-- **Metrics**: Gorilla time-series compression (3-5× compression)
-- **Messages**: Token pool with references (variable)
-- **Stack traces**: Reference tracking (store once, reuse pointer)
+LogPress uses **semantic-aware encoding** tailored to each field:
 
-**Queryable Index**: Columnar storage enables filtering without full decompression.
+| Field Type | Codec | Compression |
+|------------|-------|-------------|
+| Timestamps | Delta encoding | 8-10× |
+| Severity/Status | Dictionary encoding | 5-7× |
+| Metrics | Gorilla time-series | 3-5× |
+| Messages | Token pool + refs | Variable |
+| Stack traces | Reference tracking | High |
 
-### 3. Evaluation Metrics
-
-**Accuracy** (vs manual annotations):
-- Precision: % of extracted fields that are correct
-- Recall: % of actual fields that were found
-- F1-Score: Harmonic mean
-- **Target**: >90% accuracy
-
-**Compression Performance**:
-- Compression ratio vs gzip baseline
-- Query latency overhead
-- **Target**: >10× compression, <2× query slowdown
+**Queryable indexes** enable filtering without full decompression (6.5× speedup).
 
 ## 🧪 Testing
 

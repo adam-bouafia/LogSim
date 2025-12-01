@@ -37,6 +37,32 @@ bash scripts/run-tests.sh
 python -m pytest logpress/tests/unit/ -v
 ```
 
+#### [EXAMPLES_TESTING.md](EXAMPLES_TESTING.md)
+Complete guide for testing all 9 LogPress examples:
+- Status of all examples (✅ All passing)
+- Core examples (01-06): Work with core installation
+- Integration examples (07-09): Require optional dependencies
+- Installation matrix and test commands
+- Why each optional dependency is needed
+- CI/CD integration for examples
+- Troubleshooting common issues
+
+**Quick Test**:
+```bash
+# Test all examples (01-06 work with core install)
+python examples/01_basic_compression.py
+python examples/02_query_compressed_logs.py
+python examples/03_streaming_large_files.py
+python examples/04_custom_semantic_types.py
+python examples/05_schema_extraction_only.py
+python examples/06_batch_processing.py
+
+# Examples 07-09 require optional dependencies
+pip install LogPress[web]        # For example 07 (Flask REST API)
+pip install LogPress[api]        # For example 08 (FastAPI service)
+pip install LogPress[monitoring] # For example 09 (Log rotation handler)
+```
+
 #### [MCP_ARCHITECTURE.md](MCP_ARCHITECTURE.md)
 System design and architecture documentation:
 - MCP (Model-Context-Protocol) layers explained

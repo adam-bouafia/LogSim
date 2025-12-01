@@ -48,6 +48,10 @@ docs/THESIS_*.md
 *.toc
 *.bbl
 *.blg
+
+# Internal tracking documents (not for public repo)
+LIBRARY_TRANSFORMATION.md
+PHASE_*_COMPLETION.md
 *.synctex.gz
 *.pdf
 
